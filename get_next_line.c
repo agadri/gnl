@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   get_next_line.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: adegadri <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: sbeaujar <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/02 17:56:28 by adegadri          #+#    #+#             */
-/*   Updated: 2021/06/15 19:04:17 by adegadri         ###   ########.fr       */
+/*   Updated: 2021/06/17 16:12:27 by sbeaujar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,9 @@
 
 char	*ft_save(char *save)
 {
-	int	i;
+	int		i;
 	char	*dst;
-	
+
 	i = 0;
 	while (save[i] && save[i] != '\n')
 		i++;
@@ -39,11 +39,11 @@ char	*ft_save(char *save)
 
 char	*ft_resave(char *save)
 {
-	int	i;
-	int	len;
+	int		i;
+	int		len;
 	char	*dst;
-	int	j;
-	
+	int		j;
+
 	i = 0;
 	while (save[i] && save[i] != '\n')
 		i++;
@@ -59,10 +59,19 @@ char	*ft_resave(char *save)
 	j = 0;
 	while (save[i])
 		dst[j++] = save[i++];
-	save = NULL;
 	free(save);
+	save = NULL;
 	dst[j] = '\0';
 	return (dst);
+}
+
+int	get_next_line_protect(int fd, char **save, char **line)
+{
+	if (fd < 0 || BUFFER_SIZE < 1 || read(fd, NULL, 0) != 0 || !line)
+		return (0);
+	if (!*save)
+		*save = ft_strdup("");
+	return (1);
 }
 
 int	get_next_line(int fd, char **line)
@@ -71,23 +80,25 @@ int	get_next_line(int fd, char **line)
 	static char	*save;
 	int			rd;
 
-	rd = 1;
-	if (fd < 0 || BUFFER_SIZE < 1 || read(fd, buffer, 0) == -1)
+	if (!get_next_line_protect(fd, &save, line))
 		return (-1);
-	while (!ft_strchr(save, '\n') && rd != 0)
+	while (!ft_strchr(save, '\n'))
 	{
-		rd = read(fd,buffer,BUFFER_SIZE);
+		rd = read(fd, buffer, BUFFER_SIZE);
 		buffer[rd] = '\0';
 		if (rd == -1 )
-			return(-1);
+			return (-1);
 		if (rd == 0)
-			break ; 
+		{
+			*line = ft_strdup(save);
+			free(save);
+			save = 0;
+			return (0);
+		}
 		save = ft_strjoin(save, buffer);
 	}
 	if (ft_end(save) == 1)
 		*line = ft_save(save);
-	if (rd == 0)
-		return (0);
 	save = ft_resave(save);
 	return (1);
 }

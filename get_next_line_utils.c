@@ -82,6 +82,7 @@ char	*ft_strjoin(char *s1, char *s2)
 		while (*s1)
 			*str++ = *s1++;
 		free(temp);
+		temp = 0;
 	}
 	while (*s2)
 		*str++ = *s2++;
